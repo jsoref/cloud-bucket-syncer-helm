@@ -1,0 +1,74 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "cloud-bucket-syncer.fullname" . }}
+  labels:
+    {{- include "cloud-bucket-syncer.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    spec:
+      template:
+        metadata:
+          annotations:
+           linkerd.io/inject: disabled
+        spec:
+          restartPolicy: Never
+          serviceAccountName: {{ include "cloud-bucket-syncer.serviceAccountName" . }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumes:
+            - name: source-service-account-key
+              secret:
+                secretName: {{ .Values.sourceServiceAccountSecretName }}
+          containers:
+            - name: {{ .Chart.Name }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              args:
+                - {{ .Values.sourceProjectId | quote }}
+                - {{ .Values.destBucket | quote }}
+              volumeMounts:
+                - mountPath: /var/secrets/source
+                  name: source-service-account-key
+              env:
+                - name: AWS_DEFAULT_REGION
+                  value: us-east-2
+                - name: GOOGLE_APPLICATION_CREDENTIALS
+                  value: "/var/secrets/source/key.json"
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.destSecretName }}
+                      key: key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.destSecretName }}
+                      key: secret
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

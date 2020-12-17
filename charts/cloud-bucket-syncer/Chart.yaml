@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cloud-bucket-syncer
+description: A Helm chart for syncing cloud buckets
+type: application
+version: 0.0.1
+appVersion: 0.0.1
