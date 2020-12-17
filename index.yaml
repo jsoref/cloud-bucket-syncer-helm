@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  cloud-bucket-syncer:
+  - apiVersion: v2
+    appVersion: 0.0.1
+    created: "2020-12-17T21:46:20.630576257Z"
+    description: A Helm chart for syncing cloud buckets
+    digest: 8f75d5d51404316cea209b98b70223df0a3fb1d92af5c7e7ce90cb4fa8290ee7
+    name: cloud-bucket-syncer
+    type: application
+    urls:
+    - https://github.com/jsoref/cloud-bucket-syncer-helm/releases/download/cloud-bucket-syncer-0.0.1/cloud-bucket-syncer-0.0.1.tgz
+    version: 0.0.1
+generated: "2020-12-17T21:46:20.478156155Z"
